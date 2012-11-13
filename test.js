@@ -6,26 +6,6 @@ var ko = require('knockout')
 
 ko.merger=require('./knockout.merge.js')
 
-src = {
-  meno: {
-    lala: {
-      actions: 45
-    },
-    lili: {
-      actions: [{ 
-        name: "bitte waehlen",
-        path: ""
-      },{
-        name: "Details",
-        path: "http://www.google.de"
-      },{
-        name: "Irgendwas",
-        path: "http://www.google.de"
-      }]
-    }
-  }
-}
-
 var actionsMapper = {
   "meno.lili.actions": function(dest, src, recurse) {
     console.log("ACTOR: meno.lili.actions")
@@ -54,10 +34,30 @@ var actionsMapper = {
     })
     */
     return dest;
+  } 
+} 
+var src = {
+  meno: {
+    lala: {
+      actions: 45
+    },
+    lili: {
+      actions: [{ 
+        name: "bitte waehlen",
+        path: ""
+      },{
+        name: "Details",
+        path: "http://www.google.de"
+      },{
+        name: "Irgendwas",
+        path: "http://www.google.de"
+      }]
+    }
   }
 }
 
 dest = ko.merger.merge(actionsMapper, null, src);
+dest.meno.lili.meno = ko.observable("abels")
 console.log("*************************************")
 src = {
   meno: {

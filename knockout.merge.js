@@ -64,21 +64,20 @@ if (typeof($) == "undefined") {
 
   exports.toObject = function(obj) {
     return exports.merge({
-      "*": function(dest, src, recurse, ret) {
+      "*": function(dest, src, recurse, ret/**/,i, _src) {
           if (typeof src == "function") {
-            if ($.type(src()) == "array") {
+            _src = src();
+            if ($.type(_src) == "array") {
               dest = []
-              for(var i = 0; i < src().length; ++i) {
-                dest.push(recurse(null, src()[i]));
+              for(i = _src.length-1; i>=0; --i) {
+                dest[i] = recurse(null, _src[i]);
               }
             } else {
-              dest = src();
+              dest = _src;
             }
           } else {
-            if (!dest) {
-              dest = {}
-            }
-            for (var i in src) {
+            dest = dest || {}
+            for (i in src) {
               dest[i] = recurse(dest[i], src[i]);
             }
           }
@@ -86,30 +85,30 @@ if (typeof($) == "undefined") {
         }
     }, {}, obj)
   }
-    exports.defaultMapper = {
-      "*": function(dest, src, recurse) {
-        var type = $.type(src)
-        if (({"number":true,
-              "string":true,
-              "boolean":true,
-              "null":true})[type]) {
-          if (!dest) {
-            dest = ko.observable(src)
-          } else {
-            dest(src)
+  exports.defaultMapper = {
+    "*": function(dest, src, recurse /**/, i) {
+           var type = $.type(src)
+           if (({"number":true,
+                 "string":true,
+                 "boolean":true,
+                 "null":true})[type]) {
+              if (!dest) {
+                dest = ko.observable(src)
+              } else {
+                dest(src)
+              }
+              return dest;
+            } else if (type == "array") {
+              if (!dest) { 
+                dest = ko.observableArray();
+              }
+              for(i = src.length - 1; i >= 0 ; ++i) {
+                dest[i] = recurse(null, src[i]);
+              }
+              return dest;
+            }
+            return recurse(dest, src);
           }
-          return dest;
-        } else if (type == "array") {
-           if (!dest) { 
-             dest = ko.observableArray();
-           }
-           for(var i = 0; i < src.length; ++i) {
-             dest.push(recurse(null, src[i]));
-           }
-           return dest;
-        }
-        return recurse(dest, src);
-      }
     } 
     exports.merge = function(converter, dest, src, path /*INTERN->*/, recurse, ret, i, key) { 
       recurse = exports.merge
@@ -118,7 +117,7 @@ if (typeof($) == "undefined") {
       path = path || ""
       if ($.isArray(src)) {
         ret = []
-        for(i = 0; i < src.length; ++i) {
+        for(i = src.length -1; i>=0; --i) {
           ret[i] = (converter[path+'.*'] || defaultAction)(ret[i], src[i], function(dest, src) { 
             return recurse(converter, dest, src, path) 
           })
@@ -140,3 +139,4 @@ if (typeof($) == "undefined") {
       }
     }
 }))
+
